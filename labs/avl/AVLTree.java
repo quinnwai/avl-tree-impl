@@ -134,6 +134,7 @@ public class AVLTree<T extends Comparable<T>> {
 			// add new element as leaf of tree
 			TreeNode<T> newNode = new TreeNode<T>(value); 
 			size++;
+			newNode.height = 0;	
 			return newNode;
 	    } else {
 	    	int comparison = value.compareTo(root.value);
@@ -148,8 +149,8 @@ public class AVLTree<T extends Comparable<T>> {
 	    		// still looking -- go right
 	    		root.setRight(insertHelper(value, root.right));
 	    	}
-	    
-	    	return root;
+	    	updateHeight(root);
+	    	return rebalance(root);
 	    }
 	}
 
@@ -183,7 +184,7 @@ public class AVLTree<T extends Comparable<T>> {
 	    	int comparison = value.compareTo(root.value);
 		
 	    	if (comparison == 0) { // found element to remove
-	    		if (root.left == null || root.right == null) {
+	    		if (root.left == null || root.right == null) { 		//1 subtree case
 	    			// base case -- root has at most one subtree,
 	    			// so return whichever one is not null (or null
 	    			// if both are)
@@ -195,7 +196,6 @@ public class AVLTree<T extends Comparable<T>> {
 	    			// the successor.
 	    			T minValue = minValueInSubtree(root.right);
 	    			root.value = minValue;
-			
 	    			root.setRight(removeHelper(minValue, root.right));
 	    		}
 	    	} else if (comparison < 0) {
@@ -205,8 +205,8 @@ public class AVLTree<T extends Comparable<T>> {
 	    		// still looking for element to remove -- go right
 	    		root.setRight(removeHelper(value, root.right));
 	    	}
-	    	
-	    	return root;
+	    	updateHeight(root);
+	    	return rebalance(root);
 	    }
 	}
 
@@ -225,8 +225,22 @@ public class AVLTree<T extends Comparable<T>> {
 	// EFFECT: Set the root's height field to the updated value
 	//
 	private void updateHeight(TreeNode<T> root) {
-	    // FIXME: fill in the update code
+		//Method 1:
+		if(root == null) {
+			return;
+		}	
+		int leftHeight = -1;
+		int rightHeight = -1;
+		
+		if (root.left != null) {
+			leftHeight = root.left.height;
+		}
+		if (root.right != null) {
+			rightHeight = root.right.height;
+		}
+		root.height = 1 + Math.max(leftHeight, rightHeight);
 	}
+	
 
 	//
 	// getBalance()
@@ -234,8 +248,16 @@ public class AVLTree<T extends Comparable<T>> {
 	// (right subtree height - left subtree height)
 	//
 	private int getBalance(TreeNode<T> root) {
-	    // FIXME: fill in the balance computation
-	    return 0;
+		int rightHeight = -1;
+		int leftHeight = -1;
+		if (root.right != null) {
+			rightHeight = root.right.height;
+		}
+		if (root.left != null) {
+			leftHeight = root.left.height;
+		}
+		
+		return rightHeight - leftHeight;	    
 	}
 
 	//
@@ -247,8 +269,20 @@ public class AVLTree<T extends Comparable<T>> {
 	// RETURNS: the root of the subtree after rebalancing
 	//
 	private TreeNode<T> rebalance(TreeNode<T> root) {
-	    // FIXME: fill in the rebalancing code
-	    return null;
+		TreeNode<T> newRoot = root;
+		if(getBalance(root) <= -2) { 
+			if(getBalance(root.left) == 1) { //case 2
+				leftRotate(root.left); 	
+			}  
+			newRoot = rightRotate(root);
+		}
+		else if (getBalance(root) >= 2) { 	
+			if(getBalance(root.right) == -1) {
+				rightRotate(root.right); 	
+			} 
+			newRoot = leftRotate(root);	
+		}
+	    return newRoot;
 	}
 	
 	//
@@ -259,8 +293,25 @@ public class AVLTree<T extends Comparable<T>> {
 	// RETURNS: the new root after rotation.
 	//
 	private TreeNode<T> rightRotate(TreeNode<T> root) {
-	    // FIXME: fill in the rotation code
-	    return null;
+		TreeNode<T> newRoot = root.left;
+		TreeNode<T> inner = root.left.right;
+		
+		if(root.parent == null) {
+			this.root = newRoot; 
+			newRoot.parent = null;
+		}
+		else if (root.parent.left == root) //change parent's child depending on direction
+			root.parent.setLeft(newRoot);
+		else if (root.parent.right == root) 
+			root.parent.setRight(newRoot);
+		
+		newRoot.setRight(root);
+		root.setLeft(inner);
+		updateHeight(root);
+		updateHeight(newRoot);
+		updateHeight(newRoot.parent);
+		return newRoot;
+		
 	}
 
 	//
@@ -271,8 +322,24 @@ public class AVLTree<T extends Comparable<T>> {
 	// RETURNS: the new root after rotation.
 	//
 	private TreeNode<T> leftRotate(TreeNode<T> root) {
-	    // FIXME: fill in the rotation code
-	    return null;
+		TreeNode<T> newRoot = root.right;
+		TreeNode<T> inner = root.right.left;
+		
+		if(root.parent == null) {
+			this.root = newRoot;
+			newRoot.parent = null;
+		}
+		else if (root.parent.left == root)
+			root.parent.setLeft(newRoot);
+		else if (root.parent.right == root)
+			root.parent.setRight(newRoot);
+		
+		newRoot.setLeft(root);
+		root.setRight(inner);
+		updateHeight(root);
+		updateHeight(newRoot);
+		updateHeight(newRoot.parent);
+		return newRoot;
 	}
 	
 	/////////////////////////////////////////////////////////////
