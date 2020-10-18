@@ -1,5 +1,5 @@
 # AVL Tree Implementation
-Implementing an balanced AVL tree in Java
+Implementing a balanced AVL tree in Java
 
 ## Purpose
 Learning the properties of an AVL tree and learn how to maintain such properties after insertions/deletions. Used as lab work for a data structures and algoithms course.
